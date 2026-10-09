@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const User = require('./User');
+import mongoose from 'mongoose';
+import User from './User.js';
 
 const PET_TYPES = ['dog', 'cat', 'bird', 'rabbit', 'other'];
 const SERVICES  = ['boarding', 'house-sitting', 'dog-walking', 'drop-in'];
@@ -16,11 +16,10 @@ const sitterSchema = new mongoose.Schema({
   isVerified:      { type: Boolean, default: false },
 });
 
-// sitter.reviews - pulls reviews about this sitter
 sitterSchema.virtual('reviews', {
   ref: 'Review',
   localField: '_id',
   foreignField: 'sitter',
 });
 
-module.exports = User.discriminator('Sitter', sitterSchema, { value: 'sitter' });
+export default User.discriminator('Sitter', sitterSchema, { value: 'sitter' });

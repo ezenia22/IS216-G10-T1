@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const User = require('./User');
+import mongoose from 'mongoose';
+import User from './User.js';
 
 const ownerSchema = new mongoose.Schema({
   address: String,
@@ -10,11 +10,10 @@ const ownerSchema = new mongoose.Schema({
   favouriteSitters: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 });
 
-// owner.pets - pulls this owner's pets from the pets collection (not stored here)
 ownerSchema.virtual('pets', {
   ref: 'Pet',
   localField: '_id',
   foreignField: 'owner',
 });
 
-module.exports = User.discriminator('Owner', ownerSchema, { value: 'owner' });
+export default User.discriminator('Owner', ownerSchema, { value: 'owner' });

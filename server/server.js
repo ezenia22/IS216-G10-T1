@@ -32,5 +32,5 @@ app.use(errorHandler)                  // must be last
 
 const PORT = process.env.PORT || 5000
 connectDB().then(() => {
-  app.listen(PORT, () => console.log(`🚀 Server on http://localhost:${PORT}`))
+  app.listen(PORT, () => console.log(`Server on http://localhost:${PORT}`))
 })

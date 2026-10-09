@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const reviewSchema = new mongoose.Schema({
   booking:  { type: mongoose.Schema.Types.ObjectId, ref: 'Booking', required: true, unique: true },
@@ -8,4 +8,4 @@ const reviewSchema = new mongoose.Schema({
   comment:  String,
 }, { timestamps: true });
 
-module.exports = mongoose.model('Review', reviewSchema);
+export default mongoose.model('Review', reviewSchema);
