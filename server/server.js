@@ -1,40 +1,36 @@
-import 'dotenv/config'
+import 'dotenv/config'                 // must be the first import
 import express from 'express'
 import cors from 'cors'
 import connectDB from './src/config/db.js'
+
+// register Owner/Sitter so User.findById() returns the right type
+import './src/models/Owner.js'
+import './src/models/Sitter.js'
+
+import authRoutes from './src/routes/authRoutes.js'
 import petRoutes from './src/routes/petRoutes.js'
+import sitterRoutes from './src/routes/sitterRoutes.js'
 import errorHandler from './src/middleware/errorHandler.js'
+import ownerRoutes from './src/routes/ownerRoutes.js'
+import bookingRoutes from './src/routes/bookingRoutes.js'
+import reviewRoutes from './src/routes/reviewRoutes.js'
 
 const app = express()
-const PORT = process.env.PORT || 5000
-const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || 'http://localhost:5173'
-
-app.use(cors({ origin: CLIENT_ORIGIN }))
+app.use(cors())
 app.use(express.json())
 
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' })
-})
-
+app.get('/api/health', (req, res) => res.json({ status: 'ok' }))
+app.use('/api/auth', authRoutes)
 app.use('/api/pets', petRoutes)
+app.use('/api/sitters', sitterRoutes)
+app.use('/api/owners', ownerRoutes)
+app.use('/api/bookings', bookingRoutes)
+app.use('/api/reviews', reviewRoutes)
 
-// Fallback 404 for unmatched API routes
-app.use('/api', (req, res) => {
-  res.status(404).json({ message: 'Not found' })
+app.use((req, res) => res.status(404).json({ message: 'Route not found' }))
+app.use(errorHandler)                  // must be last
+
+const PORT = process.env.PORT || 5000
+connectDB().then(() => {
+  app.listen(PORT, () => console.log(`🚀 Server on http://localhost:${PORT}`))
 })
-
-app.use(errorHandler)
-
-async function start() {
-  try {
-    await connectDB()
-    app.listen(PORT, () => {
-      console.log(`PetSociety API listening on http://localhost:${PORT}`)
-    })
-  } catch (err) {
-    console.error('Failed to start server:', err.message)
-    process.exit(1)
-  }
-}
-
-start()
