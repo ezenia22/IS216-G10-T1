@@ -1,6 +1,6 @@
-import Booking from '../models/Booking.js'
-import Pet from '../models/Pet.js'
-import Sitter from '../models/Sitter.js'
+import Booking from '../models/bookingModel.js'
+import Pet from '../models/petModel.js'
+import Sitter from '../models/sitterModel.js'
 import httpError from '../utils/httpError.js'
 
 const DAY = 24 * 60 * 60 * 1000

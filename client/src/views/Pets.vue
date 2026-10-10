@@ -1,7 +1,8 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
-import { petsApi } from '../services/api'
+import { petsApi, errorMessages } from '../services/api'
 import PetCard from '../components/PetCard.vue'
+const SPECIES = ['Dog', 'Cat', 'Bird', 'Rabbit', 'Hamster', 'other']
 
 const pets = ref([])
 const loading = ref(true)
@@ -22,8 +23,7 @@ async function loadPets() {
   try {
     pets.value = await petsApi.getAll()
   } catch (err) {
-    error.value =
-      'Could not reach the API. Is the Express server running on the expected port?'
+    error.value = errorMessages(err)[0]
     console.error(err)
   } finally {
     loading.value = false
@@ -39,7 +39,7 @@ async function addPet() {
     pets.value.unshift(created)
     Object.assign(form, { name: '', species: '', breed: '', age: '', description: '' })
   } catch (err) {
-    error.value = 'Could not add pet.'
+    error.value = errorMessages(err)[0]
     console.error(err)
   } finally {
     submitting.value = false
@@ -51,7 +51,7 @@ async function deletePet(id) {
     await petsApi.remove(id)
     pets.value = pets.value.filter((p) => p._id !== id)
   } catch (err) {
-    error.value = 'Could not remove pet.'
+    error.value = errorMessages(err)[0]
     console.error(err)
   }
 }
@@ -60,7 +60,7 @@ onMounted(loadPets)
 </script>
 
 <template>
-  <h2 class="mb-4">Pets</h2>
+  <h2 class="mb-4">My Pets</h2>
 
   <div v-if="error" class="alert alert-warning">{{ error }}</div>
 
@@ -69,10 +69,13 @@ onMounted(loadPets)
       <label class="form-label">Name</label>
       <input v-model="form.name" type="text" class="form-control" required />
     </div>
-    <div class="col-sm-3">
-      <label class="form-label">Species</label>
-      <input v-model="form.species" type="text" class="form-control" required />
-    </div>
+   <div class="col-sm-3">
+     <label class="form-label">Species</label>
+     <select v-model="form.species" class="form-select text-capitalize" required>
+       <option value="" disabled>Choose…</option>
+       <option v-for="s in SPECIES" :key="s" :value="s">{{ s }}</option>
+     </select>
+   </div>
     <div class="col-sm-2">
       <label class="form-label">Breed</label>
       <input v-model="form.breed" type="text" class="form-control" />

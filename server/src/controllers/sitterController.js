@@ -1,4 +1,4 @@
-import Sitter from '../models/Sitter.js';
+import Sitter from '../models/sitterModel.js';
 import httpError from '../utils/httpError.js';
 
 // GET /api/sitters?petType=dog&maxRate=50&location=Bedok&service=boarding

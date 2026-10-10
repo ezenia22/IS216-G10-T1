@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
-import Review from '../models/Review.js'
-import Booking from '../models/Booking.js'
-import Sitter from '../models/Sitter.js'
+import Review from '../models/reviewModel.js'
+import Booking from '../models/bookingModel.js'
+import Sitter from '../models/sitterModel.js'
 import httpError from '../utils/httpError.js'
 
 async function refreshSitterRating(sitterId) {

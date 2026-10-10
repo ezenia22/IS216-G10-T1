@@ -1,6 +1,6 @@
-import Owner from '../models/Owner.js'
-import Sitter from '../models/Sitter.js'
-import Booking from '../models/Booking.js'
+import Owner from '../models/ownerModel.js'
+import Sitter from '../models/sitterModel.js'
+import Booking from '../models/bookingModel.js'
 import httpError from '../utils/httpError.js'
 
 // GET /api/owners/me/favourites

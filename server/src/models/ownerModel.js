@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import User from './User.js';
+import User from './userModel.js';
 
 const ownerSchema = new mongoose.Schema({
   address: String,
