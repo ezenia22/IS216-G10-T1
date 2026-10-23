@@ -10,6 +10,8 @@ import {
   toHHMM,
   momentOf,
   isBusy,
+  slotsFor,
+  slotsCover,
   slotFree,
   dayHasFreeSlot
 } from '../utils/bookingTimeHelpers.js'
@@ -18,7 +20,7 @@ import {
 // The page gives it the sitter's days and booked times (props), and it tells the page
 // what the owner chose (the 'change' event).
 const props = defineProps({
-  availability: { type: Object, required: true }, // { '2026-10-20': 'available' | 'blocked' }
+  availability: { type: Object, required: true }, // { '2026-10-20': { status: 'available' | 'blocked', slots: [540, 570, ...] } }
   busy: { type: Array, required: true } // times the sitter is already booked: [{ start, end }] as moments
 })
 const emit = defineEmits(['change'])
@@ -26,14 +28,14 @@ const emit = defineEmits(['change'])
 
 const today = toDateString(new Date())
 
-// What the owner has chosen so far
+// start and end date + timing that the owner wants 
 const startDate = ref('') // 'YYYY-MM-DD'
 const startTime = ref('') // '09:00'
 const endDate = ref('')
 const endTime = ref('') // '17:30' (or '24:00' = end of the day)
 
 // The month shown in the calendar picker
-const viewYear = ref(new Date().getFullYear())
+const viewYear = ref(new Date().getFullYear()) //2026
 const viewMonth = ref(new Date().getMonth()) // 0 = January
 const monthName = computed(() =>
   new Date(viewYear.value, viewMonth.value, 1).toLocaleDateString('en-SG', { month: 'long', year: 'numeric' })
@@ -64,17 +66,19 @@ const lastEndDate = computed(() => {
   if (!startDate.value) return ''
   let last = startDate.value
   const d = new Date(startDate.value + 'T00:00:00')
-  for (let i = 0; i < 90; i++) {
+  for (let i = 0; i < 90; i++) { 
     d.setDate(d.getDate() + 1) // look at the next day
     const day = toDateString(d)
-    if (props.availability[day] !== 'available') break // not available: can't go any further
-    const dayStart = momentOf(day, 0)
-    if (!isBusy(props.busy, dayStart, momentOf(day, DAY_MIN))) {
+    if (props.availability[day]?.status !== 'available') break // not available: can't go any further
+    const slots = slotsFor(props.availability, day) // the half-hours the sitter is free that day
+
+    const dayStart = momentOf(day, 0) // starts at 12am on that date 
+    if (slots.length === 48 && !isBusy(props.busy, dayStart, momentOf(day, DAY_MIN))) {
       last = day // a completely free day: fine, keep going
       continue
     }
-    if (!isBusy(props.busy, dayStart, dayStart + SLOT_MS)) last = day // booked later that day: the booking can still end that morning
-    break // but it can't go past a booked day
+    if (slots.includes(0) && !isBusy(props.busy, dayStart, dayStart + SLOT_MS)) last = day // free only part of that day: the booking can still end that morning
+    break // but it can't go past a day that isn't free all day
   }
   return last
 })
@@ -85,7 +89,7 @@ function dayDisabled(date) {
   if (startDate.value && !endDate.value && date >= startDate.value) {
     return date > lastEndDate.value // picking the end day: everything from the start to the limit is fine
   }
-  return !(date >= today && props.availability[date] === 'available' && dayHasFreeSlot(props.busy, date))
+  return !(date >= today && props.availability[date]?.status === 'available' && dayHasFreeSlot(props.busy, date, slotsFor(props.availability, date)))
 }
 
 // makes sure the startdate,endate , starttime and endtime are logical 
@@ -117,9 +121,11 @@ function clearDates() {
 const startSlots = computed(() => {
   if (!startDate.value) return []
   const list = []
+  const slots = slotsFor(props.availability, startDate.value) // the half-hours the sitter is free that day
   for (let m = 0; m < DAY_MIN; m += 30) {
-    const free = slotFree(props.busy, startDate.value, m)
-    const note = free ? '' : momentOf(startDate.value, m) <= Date.now() ? ' (passed)' : ' (booked)'
+    const free = slotFree(props.busy, startDate.value, m, slots)
+    const startOfSlot = momentOf(startDate.value, m)
+    const note = free ? '' : startOfSlot <= Date.now() ? ' (passed)' : isBusy(props.busy, startOfSlot, startOfSlot + SLOT_MS) ? ' (booked)' : ' (not available)'
     list.push({ value: toHHMM(m), label: formatTime(toHHMM(m)) + note, disabled: !free })
   }
   return list
@@ -128,15 +134,22 @@ const startSlots = computed(() => {
 // or if the booking from the chosen start would run into a time the sitter is booked.
 const endSlots = computed(() => {
   if (!startDate.value || !endDate.value || !startTime.value) return []
-  const startMs = momentOf(startDate.value, toMinutes(startTime.value))
+  const startMin = toMinutes(startTime.value)
+  const startMs = momentOf(startDate.value, startMin)
+  // the hours the booking takes on the first day and on the last day must all be hours the sitter is free
+  const sameDay = startDate.value === endDate.value
+  const startDayOk = sameDay || slotsCover(slotsFor(props.availability, startDate.value), startMin, DAY_MIN)
+  const endDaySlots = slotsFor(props.availability, endDate.value)
   const list = []
   for (let m = 30; m <= DAY_MIN; m += 30) {
-    const value = m === DAY_MIN ? '24:00' : toHHMM(m) // 24:00 = the end of the day
+    const value = m === DAY_MIN ? '24:00' : toHHMM(m) //when m == 1440, special case, toHHMM doesnt work, assign it 24:00 (which it actl is ) 
     const endMs = momentOf(endDate.value, m)
-    const afterStart = endMs > startMs
-    const free = afterStart && !isBusy(props.busy, startMs, endMs)
-    const note = (value === '24:00' ? ' (end of day)' : '') + (afterStart && !free ? ' (booked)' : '')
-    list.push({ value, label: formatTime(value) + note, disabled: !free })
+    const afterStart = endMs > startMs 
+    const hoursOk = startDayOk && slotsCover(endDaySlots, sameDay ? startMin : 0, m) // all of those hours are free hours
+    const busyThen = isBusy(props.busy, startMs, endMs)
+    const free = afterStart && hoursOk && !busyThen // checks wether booking end is aft booking start + person isnt busy during that period 
+    const note = (value === '24:00' ? ' (end of day)' : '') + (afterStart && !free ? (busyThen ? ' (booked)' : ' (not available)') : '')
+    list.push({ value, label: formatTime(value) + note, disabled: !free }) //disabled =!free ; so if free, will be disabled and greyeded out ; if not wont be 
   }
   return list
 })
