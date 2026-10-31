@@ -16,6 +16,16 @@ export const postSignup = async (req, res) => {
         errors.push("Must be a valid email.");
     }
 
+    const existingUser = await User.getUserByEmail(cleanEmail);
+    if (existingUser) {
+        errors.push("Email is already registered."); 
+    }
+
+    const existingUser2 = await User.getUserByUsername(username);
+    if (existingUser2) {
+        errors.push("Username is already registered."); 
+    }
+
     if (password !== confirmPassword) {
         errors.push("Passwords do not match.");
     }
@@ -31,16 +41,6 @@ export const postSignup = async (req, res) => {
 
     if (!/[A-Z]/.test(password)) {
       errors.push('Password must contain at least 1 uppercase letter.')
-    }
-
-    const existingUser = await User.getUserByEmail(cleanEmail);
-    if (existingUser) {
-        errors.push("Email is already registered."); 
-    }
-
-    const existingUser2 = await User.getUserByUsername(username);
-    if (existingUser2) {
-        errors.push("Username is already registered."); 
     }
 
     if (errors.length > 0) {
@@ -101,7 +101,7 @@ export const me = async (req, res) => {
   if (!req.session.userId) {
     return res.status(401).json({ message: "Not logged in" });
     }
-  const user = await User.findById(req.session.userId).select('-password +ownerProfile.address +sitterProfile.address')  
+  const user = await User.findById(req.session.userId).select('-password +ownerProfile.address +ownerProfile.instructions +sitterProfile.address')  
   // res.json({ id: user._id, username: user.username, role: user.role, bio: user.bio });
   // if (!user){
   //   return res.status(401).json({ message: "Not logged in" });
