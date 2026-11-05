@@ -125,7 +125,7 @@ const titleId = computed(() => `rep-title-${props.entry.booking._id}`)
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="body"> 
     <div ref="scroller" class="rep-backdrop" @click.self="emit('close')">
       <div class="rep" role="dialog" aria-modal="true" :aria-labelledby="titleId">
         <!-- pinned header -->
@@ -311,7 +311,7 @@ const titleId = computed(() => `rep-title-${props.entry.booking._id}`)
   color: #2b2420;
 }
 .rep-head {
-  position: sticky;
+  
   top: 0;
   z-index: 2;
   display: flex;
