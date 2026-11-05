@@ -468,7 +468,7 @@ const shownEvents = computed(() => (allEvents.value ? events.value : events.valu
           </form>
         </div>
 
-        <div v-if="walkPrompt" class="sc-panel sc-panel--plain" role="alert">
+        <div v-if="walkPrompt" class="sc-panel" role="alert">
           <p class="mb-2">Finish or end your walk before ending the session.</p>
           <div class="d-flex flex-wrap gap-2">
             <button type="button" class="btn btn-brand sc-panel__btn" @click="openWalk">Go to walk</button>
@@ -485,7 +485,7 @@ const shownEvents = computed(() => (allEvents.value ? events.value : events.valu
         </div>
 
         <!-- on phones the error also shows here, because the checklist may be scrolled out of view -->
-        <div v-if="actionError" class="sc-error-text sc-dock__error" role="alert">{{ actionError }}</div>
+        <div v-if="actionError" class="alert alert-warning sc-dock__error" role="alert">{{ actionError }}</div>
       </div>
     </div>
 
@@ -572,7 +572,7 @@ const shownEvents = computed(() => (allEvents.value ? events.value : events.valu
         <section class="sc-card">
           <h4 class="sc-label">Care checklist</h4>
 
-          <div v-if="actionError" class="sc-error-text" role="alert">{{ actionError }}</div>
+          <div v-if="actionError" class="alert alert-warning">{{ actionError }}</div>
 
           <div v-if="session.booking.notes" class="sc-notes-box">
             <strong class="d-block">{{ isSitter ? 'Notes from the owner' : 'Your notes for the sitter' }}</strong>
@@ -898,19 +898,6 @@ const shownEvents = computed(() => (allEvents.value ? events.value : events.valu
 }
 .sc-panel__btn {
   min-height: 44px;
-}
-/* a prompt shown as plain text, without the bordered box */
-.sc-panel--plain {
-  border: 0;
-  background: transparent;
-  padding-top: 0.25rem;
-  padding-bottom: 0.25rem;
-}
-/* "Add your notes..." and other action messages: plain text, no box */
-.sc-error-text {
-  margin: 0.5rem 0;
-  color: #8a5300;
-  font-weight: 600;
 }
 .sc-dock__error {
   display: none;
@@ -1343,14 +1330,7 @@ fieldset:disabled .photo-slot {
   .sc--sitter .sc-dock__error {
     display: block;
     order: 2;
-    margin: 0;
-    padding: 0.5rem 0.75rem;
-    background: #fff; /* sits over the page on phones, so it keeps a plain white backing (no border) */
-  }
-  .sc--sitter .sc-panel--plain {
-    margin: 0;
-    background: #fff;
-    box-shadow: none;
+    margin: 0 0.75rem 0.5rem;
   }
 }
 
