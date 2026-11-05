@@ -697,9 +697,9 @@ async function save() {
   margin-top: 0.5rem;
   padding: 0.8rem 0;
   border-top: 1px solid var(--line);
-  background: var(--tint-soft);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+ 
+  /* backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px); */
 }
 .ef-bar__error {
   margin: 0 auto 0 0;
