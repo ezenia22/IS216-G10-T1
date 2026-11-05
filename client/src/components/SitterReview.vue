@@ -46,12 +46,16 @@ const filtered = computed(() => {
   if (commentsOnly.value) {
     list = list.filter((r) => r.comment && r.comment.trim())
   }
+  // Always sorted here, newest first by date; Highest / Lowest rated use the date to break ties
+  const time = (r) => new Date(r.createdAt).getTime() || 0
+  const byNewest = (a, b) => time(b) - time(a)
   if (sortBy.value === 'highest') {
-    list = [...list].sort((a, b) => b.rating - a.rating)
-  } else if (sortBy.value === 'lowest') {
-    list = [...list].sort((a, b) => a.rating - b.rating)
+    return [...list].sort((a, b) => b.rating - a.rating || byNewest(a, b))
   }
-  return list
+  if (sortBy.value === 'lowest') {
+    return [...list].sort((a, b) => a.rating - b.rating || byNewest(a, b))
+  }
+  return [...list].sort(byNewest)
 })
 
 const { page, pageItems: pagedReviews, goPage, reset } = usePagination(filtered, {
@@ -125,11 +129,6 @@ watch(() => props.sitterId, (id) => {
   }
 }, { immediate: true })
 
-watch(ratingFilter, (r) => {
-  if (r !== 0 && sortBy.value !== 'newest') {
-    sortBy.value = 'newest'
-  }
-})
 watch([ratingFilter, commentsOnly, sortBy], () => {
   page.value = 1
 })
@@ -146,8 +145,8 @@ watch([ratingFilter, commentsOnly, sortBy], () => {
         <label for="reviewSort" class="visually-hidden">Sort reviews</label>
         <select id="reviewSort" v-model="sortBy" class="form-select form-select-sm">
           <option value="newest">Newest</option>
-          <option value="highest" :disabled="ratingFilter !== 0">Highest rated</option>
-          <option value="lowest" :disabled="ratingFilter !== 0">Lowest rated</option>
+          <option value="highest">Highest rated</option>
+          <option value="lowest">Lowest rated</option>
         </select>
       </div>
     </div>
@@ -163,8 +162,8 @@ watch([ratingFilter, commentsOnly, sortBy], () => {
       {{ isGiven ? 'No reviews written yet.' : 'No reviews yet.' }}
     </p>
 
-    <div v-else class="sr-layout" :class="{ 'sr-layout--solo': mode === 'given' }">
-      <aside v-if="!isGiven" class="sr-breakdown" aria-label="Filter by rating">
+    <div v-else class="sr-layout">
+      <aside class="sr-breakdown" aria-label="Filter by rating">
         <button v-for="n in [5, 4, 3, 2, 1]" :key="n" type="button" class="sr-bar"
                 :class="{ 'sr-bar--on': ratingFilter === n }"
                 :disabled="!counts[n]" :aria-pressed="ratingFilter === n"
