@@ -345,7 +345,6 @@ onMounted(async () => {
 
   <!-- Phones: stays at the bottom of the screen while scrolling -->
   <div class="nbr-bar d-lg-none">
-    <p v-if="error" class="bar-error" role="alert">{{ error }}</p>
     <div>
       <div class="small text-muted">Total</div>
       <div class="bar-total">${{ totalPrice }}</div>
@@ -469,7 +468,6 @@ onMounted(async () => {
   box-shadow: 0 -4px 14px rgba(120, 70, 40, 0.08);
 }
 .bar-total { font-size: 1.35rem; font-weight: 800; color: #2e7d32; line-height: 1.1; }
-.bar-error { flex-basis: 100%; margin: 0; font-size: 0.82rem; color: #b02a37; }
 
 /* "Request sent" screen */
 .sent { max-width: 760px; margin: 1rem auto 0; display: flex; flex-direction: column; gap: 1.25rem; }
