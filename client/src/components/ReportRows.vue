@@ -77,6 +77,7 @@ const count = computed(() => props.entry.days.length)
 .rr-list {
   container: rr / inline-size;
   display: grid;
+  align-content: start; /* beside the taller review card (992px+) the rows keep their own height instead of stretching to fill the column */
   gap: 0.7rem;
 }
 /* narrow: two lines. "Tue 3 Nov · Day 3 · last", 7/7 and › on top; times, photos, walks and any warning under it */
