@@ -32,8 +32,7 @@ const isNewSitter = computed(() => {
             <div class="d-flex flex-wrap justify-content-start gap-2">
                 <img :src="sitter.profilePicture?.url || defaultAvatar"
                     class="border rounded img-fluid flex-shrink-0"
-                    style="width: 80px; height: 80px; object-fit: cover; border:1px solid grey"
-                    alt="Circular Profile">
+                    style="width: 80px; height: 80px; object-fit: cover; border:1px solid grey">
                 <!-- card-info can shrink, so on narrow phones the badge and stars stay inside the card -->
                 <div class="d-flex flex-column ms-2 mb-3 card-info">
                     <div class="d-flex flex-wrap align-items-center gap-1 column-gap-2">
