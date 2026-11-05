@@ -14,23 +14,87 @@ PetSociety connects pet owners in Singapore with trusted pet sitters. Owners fin
 
 Log in with either the email or the username.
 
-## What our app does
+## Features
 
-**Owners can:**
-- Search sitters by name, distance, available dates and hours, pet type and rating, on a list and a map, or turn on "Recommended for me".
-- Send a booking request: pick pets, days and hours, and care tasks (feed, walk, medicine and more). The price is worked out from the tasks.
-- Confirm a booking once the sitter accepts, add care details (feeding times, food, instructions), and chat with the sitter.
-- Record walking routes from home on a map, for the sitter to follow.
-- Follow a visit live: the sitter's location, ticked tasks, walks, and alerts if the sitter goes off the route.
-- Read the visit report (notes and photos), pay by card, and leave a review.
+### Unique selling points (USP)
 
-**Sitters can:**
-- Set their available days and hours on a calendar, and sync confirmed bookings to Google Calendar.
-- Accept or decline requests, and cancel with a reason.
-- Start a session at the owner's home (checked by GPS), tick off tasks, do walks with live tracking, and end with a report and photos.
-- See payments received on the Transactions page.
+| # | Feature | What it does |
+| --- | --- | --- |
+| USP 1 | Recommendation-based sitter matching | "Recommended for me" shows only sitters who take every kind of pet the owner has and offer at least one service the owner needs, best match first, with a tag explaining why (for example "Takes Dog, Cat", "Offers Grooming"). |
+| USP 2 | Structured care checklist | Each booking is built from care tasks (feed, walk, medicine and more), each with times a day and the pets it's for. The price is worked out from the tasks, and the owner adds care details (feeding times, food, amount, instructions) before the first visit. |
+| USP 3 | Live session visibility | During a visit the owner sees the sitter's live location, which tasks are ticked off, walks as they happen, and alerts, without needing to message the sitter. |
+| USP 4 | Walk-route accountability | Owners record walking routes from home on a map. During a walk the sitter's path is tracked; going more than 25 m off the route warns the sitter, and more than 50 m notifies the owner. Walks must start and finish at the home, or be ended early with a reason. |
 
-Both sides get in-app notifications (new requests, accepted, confirmed, declined, cancelled, session started, walk alerts, payment due and received).
+### Core features (CSP)
+
+| # | Feature | What it does |
+| --- | --- | --- |
+| CSP 1 | Sitter availability calendar | Sitters mark days and half-hour slots (7 am to 12 am) as free or blocked. Owners can only book free times, and confirmed bookings can sync to the sitter's Google Calendar. |
+| CSP 2 | Sitter profiles, services and ratings | Public sitter profiles show bio, experience, pet types, services and prices, photos, badges, reviews and average rating. |
+| CSP 3 | Sitter search and filters (map and calendar) | Search by name, distance from an address or your location, available dates and hours, pet type and rating, on a list and a map. Sitters free for only part of the range are shown separately, with which days they're free. |
+| CSP 4 | Booking lifecycle | Request → sitter accepts or declines → owner confirms → session(s) → completed → paid, plus withdraw, cancel (with a reason) and expiry. |
+| CSP 5 | Notifications and session chat | In-app notifications for every booking, session, walk and payment event, with an unread badge, plus a chat between owner and sitter while a booking is confirmed or in progress. |
+| CSP 6 | Session reports and photos | When a session ends, the sitter submits notes and up to 3 photos. The owner reads the report with ticked tasks, walks and a timeline of where the sitter was. |
+| CSP 7 | Payment and reviews | The owner pays a completed booking by card through Stripe Checkout (test mode), then leaves a 1 to 5 star review that updates the sitter's rating. |
+
+### Full feature list
+
+**Accounts and profiles**
+- Register as an owner or sitter, with live password rules; log in with email or username; log out; change password. Logins last 7 days.
+- Owners add pets (photo, species, age) and an address picked from OneMap suggestions (Singapore only), plus "Services I need".
+- Sitters add bio, "Sitting since", pet types, services, service area and photos. Sitters can earn badges shown on their profile.
+
+**Finding a sitter**
+- Name search, filters (distance, dates and hours, pet type, rating), map view, and "Recommended for me" (USP 1).
+- Logged-out visitors can browse sitters but must log in to book.
+
+**Booking**
+- Pick pets, one or several days (with different hours per day if needed), and care tasks. The server works out the price, so the page can't fake it.
+- Sitter accepts or declines; owner confirms; either side can cancel with a reason; owners can withdraw a request.
+- Care details are added after confirming and lock once the first session starts.
+
+**Sessions and walks (sitter)**
+- Start a session at the owner's home (GPS check within 75 m), tick off tasks, do walks with live tracking, end with notes and photos.
+- Owners follow along live (USP 3) and get alerts (USP 4).
+
+**Owner tools**
+- My Bookings with tabs (to confirm, upcoming, to pay, past), Booking Detail, My Routes (record and rename walk routes), session reports.
+
+**Sitter tools**
+- Home dashboard (new requests, upcoming, today), Booking Requests with tabs, Calendar, Transactions (payments received, filterable).
+
+**Notifications** (CSP 5)
+- New request, request sent, accepted, confirmed, declined, cancelled, expired, session started, session started without a location check, session ended automatically, off route, back on route, walk ended early, back home reminder, payment due, payment successful, payment received, payment failed.
+
+### Edge cases handled
+
+**Sessions**
+- **Starting a second session without ending the first:** refused with "End your other session before starting this one." Only one session can run at a time, so one owner never sees the location for another owner's visit.
+- **Starting today's session twice:** refused with "Today's session has already been started."
+- **Ending without a note:** blocked: "Add your notes for the owner before ending the session." The server also refuses an empty note.
+- **Ending with unticked tasks:** the sitter is asked to confirm before ending, so it's a warning, not a block. The report shows the owner which tasks weren't done.
+- **Ending while a walk is still running:** refused until the walk is finished or ended early.
+- **Weak GPS or too far from the home at check-in:** the start is refused with the reason ("out of range" with the distance, or "no location" when GPS is missing or less accurate than 100 m). The sitter can still start by writing a note of up to 200 characters, and the owner is warned ("session started without a location check") with that note.
+- **More than 3 photos in a report:** refused before anything is uploaded.
+- **A session from an earlier day not ended past midnight:** it stays open on the Session page so the sitter can still submit the report. Location sharing and new walks stop 30 minutes after the booked end time.
+- **The sitter never ends a session:** it ends automatically 6 hours after the booked end time with "The sitter didn't submit a report." Both sides are notified, any walk still running is ended, and on the booking's last day the booking becomes completed so the owner can pay.
+- **The sitter never starts a confirmed session:** once the booked end time passes, the booking becomes Expired and both the owner and the sitter are notified. The owner is never charged for it.
+
+**Walks**
+- **Ending a walk early:** allowed anywhere, but the sitter must give a reason (up to 200 characters), which the owner is told. An ended-early walk still counts toward that task.
+- **Starting or finishing a walk away from the home:** refused ("Start the walk at the owner's home." / "Finish the walk at the owner's home, or end it early.").
+- **Going off route:** the sitter is warned at 25 m, and the owner notified at 50 m (once per deviation), then told when the sitter is back on route.
+- **Two walks at once, or more walks than booked for the day:** refused.
+- **Back at the home with a walk still running for 20 minutes:** the sitter gets a reminder to end it.
+
+**Bookings**
+- **A request the sitter never answers, or the owner never confirms:** expires at its start time, and the owner is notified.
+- **Clashes:** a sitter can't accept a request that overlaps one they already accepted, and an owner can't confirm the same pet in two bookings at the same time. Other owners' pending requests don't block a time.
+- **Times outside the sitter's availability, in the past, or not on the half-hour:** refused, naming the day.
+- **Cancelling:** needs a reason (up to 300 characters); paid, completed and in-progress bookings can't be cancelled.
+- **Paying:** only once the booking is completed, never twice. Coming back from Stripe without paying shows "Payment was cancelled. You can try again."
+- **Reviews:** one per booking, only once it's completed.
+- **Access:** every page and API checks login and role, and you can only see bookings, pets, routes, chats and notifications that are yours.
 
 ## APIs and libraries used
 
