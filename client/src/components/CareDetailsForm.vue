@@ -192,10 +192,10 @@ async function save() {
     <div v-if="error" class="alert alert-warning mt-3 mb-0">{{ error }}</div>
 
     <div class="row g-2 mt-2">
-      <div class="col-6">
+      <div class="col-12 col-sm-6">
         <button type="button" class="btn btn-outline-secondary w-100" :disabled="saving" @click="emit('close')">{{ closeText }}</button>
       </div>
-      <div class="col-6">
+      <div class="col-12 col-sm-6">
         <button type="submit" class="btn btn-brand w-100" :disabled="saving">{{ saving ? 'Saving…' : 'Save care details' }}</button>
       </div>
     </div>

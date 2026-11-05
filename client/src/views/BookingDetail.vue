@@ -305,11 +305,11 @@ onMounted(async () => {
     <div v-else-if="error" class="alert alert-warning mt-3">{{ error }}</div>
 
     <template v-else>
-      <div class="d-flex flex-wrap align-items-center gap-3 mt-2 mb-1">
+      <div class="booking-header d-flex flex-wrap align-items-center gap-3 mt-2 mb-1">
         <h2 class="detail-title mb-0">Booking Detail</h2>
         <StatusPill :status="booking.status" />
         <!-- the booking's chat: live while it's confirmed or in progress, read-only once it has ended -->
-        <SessionChat v-if="showChat" class="ms-auto" :booking-id="booking._id" :is-sitter="isSitter"
+        <SessionChat v-if="showChat" class="booking-header__chat ms-auto" :booking-id="booking._id" :is-sitter="isSitter"
                      :can-send="chatLive" button-text="Chat" />
       </div>
       <!-- from 992px: two columns, the booking's cards on the left and the date, price and the other person (with the buttons) on the right.
@@ -533,6 +533,15 @@ onMounted(async () => {
   background: #fff;
   border: 1px solid #ede3d8;
   border-radius: 12px;
+}
+
+/* On compact screens, Chat gets its own row and starts at the same left edge
+   as the heading instead of retaining the desktop right alignment. */
+@media (max-width: 640px) {
+  .booking-header__chat {
+    flex-basis: 100%;
+    margin-left: 0 !important;
+  }
 }
 
 /* the two columns (from 992px). Phones and tablets: one column in this order, as before:
