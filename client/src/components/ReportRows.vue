@@ -79,13 +79,14 @@ const count = computed(() => props.entry.days.length)
   display: grid;
   gap: 0.7rem;
 }
-/* narrow: two lines. "Tue 3 Nov · Day 3 · last", 7/7 and › on top; times, photos, walks and any warning under it */
+/* narrow: two lines on the left ("Tue 3 Nov · Day 3 · last", then times, photos, walks and any warning);
+   7/7 and › span both lines on the right, so they sit centred side by side */
 .rr-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 3rem 1rem;
   grid-template-areas:
     "date count go"
-    "info info go";
+    "info count go";
   align-items: center;
   gap: 0.25rem 0.75rem;
   width: 100%;
