@@ -370,7 +370,7 @@ const shownEvents = computed(() => (allEvents.value ? events.value : events.valu
 
 <template>
   <article class="sc" :class="isSitter ? 'sc--sitter' : 'sc--owner'">
-    <div class="sc-sticky">
+    <div class="sc">
       <!-- header: who, which pets, which day, and how far along -->
       <header class="sc-head">
         <span class="sc-avatar" aria-hidden="true">
