@@ -56,7 +56,7 @@ export async function getUserReviews(req, res) {
   }
   const reviews = await Review.find({ sitter: req.params.id })
     .populate('owner', 'username profilePicture')
-    .sort({ _id: -1 })
+    .sort({ createdAt: -1, _id: -1 })
   res.json(reviews)
 }
 
@@ -66,7 +66,7 @@ export async function getReviewsGiven(req, res) {
   }
   const reviews = await Review.find({ owner: req.params.id })
     .populate('sitter', 'username profilePicture')
-    .sort({ _id: -1 })
+    .sort({ createdAt: -1, _id: -1 })
   res.json(reviews)
 }
 
