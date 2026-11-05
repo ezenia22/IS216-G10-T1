@@ -209,6 +209,11 @@ const saving = ref(false)
 
 async function save() {
   error.value = ''
+  // the address box has text that isn't a picked address: stop, instead of quietly keeping the old one
+  if (locationQuery.value.trim() && locationQuery.value !== place.value?.label) {
+    error.value = 'Pick your address from the list before saving.'
+    return
+  }
   saving.value = true
   let detailsSaved = false
 
@@ -692,9 +697,9 @@ async function save() {
   margin-top: 0.5rem;
   padding: 0.8rem 0;
   border-top: 1px solid var(--line);
-  background: var(--tint-soft);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+ 
+  /* backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px); */
 }
 .ef-bar__error {
   margin: 0 auto 0 0;

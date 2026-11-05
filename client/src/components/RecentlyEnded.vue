@@ -121,7 +121,7 @@ function reviewSaved(e, review) {
         <div v-if="openIds.has(e.booking._id)" class="re-body">
           <ReportRows :entry="e" @open="emit('open-report', { entry: e, dayIndex: $event })" />
           <ReviewCard class="re-review" :booking-id="e.booking._id" :sitter-name="sitterName(e)" :review="e.review"
-                      :open-until="e.reviewOpenUntil" compact @saved="reviewSaved(e, $event)" />
+                      :open-until="e.reviewOpenUntil" compact split @saved="reviewSaved(e, $event)" />
         </div>
       </article>
 
@@ -284,14 +284,49 @@ function reviewSaved(e, review) {
   }
 }
 
+/* phones and tablets: one column, your review first, then the care reports */
 .re-body {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 1.3rem;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.1rem;
   align-items: start;
-  padding: 1.2rem 1.3rem;
+  padding: 1rem;
   border-top: 1px solid #e6dcd3;
   background: #faf6f2;
+}
+.re-body > * {
+  min-width: 0;
+}
+.re-review {
+  order: -1;
+}
+@media (min-width: 768px) {
+  .re-body {
+    padding: 1.2rem 1.3rem;
+  }
+}
+/* laptops and up: two columns. Row 1 holds both labels and row 2 both cards (CSS subgrid),
+   so the first report row and the review card always start on the same line, even if a label wraps */
+@media (min-width: 992px) {
+  .re-body {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    column-gap: 1.3rem;
+    row-gap: 0.6rem;
+  }
+  .re-body > * {
+    grid-row: 1 / span 2;
+    display: grid;
+    grid-template-rows: subgrid;
+  }
+  .re-review {
+    order: 0;
+  }
+  .re-body :deep(.rr-label),
+  .re-body :deep(.rv-label) {
+    align-self: end;
+    margin: 0;
+  }
 }
 .re-toggle:focus-visible {
   outline: 3px solid var(--accent-deep);
@@ -326,13 +361,6 @@ function reviewSaved(e, review) {
   .re-chips {
     order: 3;
     flex: 1 1 100%;
-  }
-  .re-body {
-    grid-template-columns: 1fr;
-    padding: 1rem;
-  }
-  .re-review {
-    order: -1; /* the review card comes first on phones */
   }
 }
 </style>

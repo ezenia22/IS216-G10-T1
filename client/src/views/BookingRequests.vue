@@ -178,8 +178,8 @@ onMounted(loadRequests)
     <template v-else-if="!error">
       <BookingTabs :tabs="tabsWithCounts" :active-tab="activeTab" @select="selectTab" />
 
-      <div v-if="visibleBookings.length > 1" class="d-flex justify-content-end align-items-center gap-2 mb-2">
-        <button v-if="sortBy" type="button" class="btn btn-sm p-0" style="color:#bd5679;" @click="sortBy = ''">Clear sort</button>
+      <!-- sort sits on the left, under the tabs; Clear sort comes after it -->
+      <div v-if="visibleBookings.length > 1" class="d-flex justify-content-start align-items-center gap-2 mb-2">
         <label for="reqSort" class="visually-hidden">Sort requests</label>
         <select id="reqSort" v-model="sortBy" class="form-select form-select-sm w-auto">
           <option value="" disabled>Sort by…</option>
@@ -192,6 +192,7 @@ onMounted(loadRequests)
             <option value="priceLow">Low to high</option>
           </optgroup>
         </select>
+        <button v-if="sortBy" type="button" class="btn btn-sm p-0" style="color:#bd5679;" @click="sortBy = ''">Clear sort</button>
       </div>
 
       <p v-if="!visibleBookings.length" class="text-center text-muted py-5">

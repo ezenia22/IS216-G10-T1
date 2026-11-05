@@ -15,7 +15,7 @@ const loading = ref(true)
 const error = ref('')
 
 // The booking id, not a position in the list, so a refresh can't switch sessions
-const selectedId = ref(null)
+const selectedId = ref(null) 
 const listOpen = ref(false)
 const unread = reactive({}) // unread chat messages per booking id
 

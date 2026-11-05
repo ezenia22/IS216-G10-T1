@@ -21,8 +21,8 @@ Log in with either the email or the username.
 | # | Feature | What it does |
 | --- | --- | --- |
 | USP 1 | Recommendation-based sitter matching | "Recommended for me" shows only sitters who take every kind of pet the owner has and offer at least one service the owner needs, best match first, with a tag explaining why (for example "Takes Dog, Cat", "Offers Grooming"). |
-| USP 2 | Structured care checklist | Each booking is built from care tasks (feed, walk, medicine and more), each with times a day and the pets it's for. The price is worked out from the tasks, and the owner adds care details (feeding times, food, amount, instructions) before the first visit. |
-| USP 3 | Live session visibility | During a visit the owner sees the sitter's live location, which tasks are ticked off, walks as they happen, and alerts, without needing to message the sitter. |
+| USP 2 | Structured care checklist | Each booking is built from care tasks (feed, walk, medicine and more), each with times a day, with the option to pick specific days. The price is worked out from the tasks, and the owner adds care details (feeding times, food, amount, instructions) before the first visit. |
+| USP 3 | Live session location and task progress | During a visit the owner sees the sitter's live location, which tasks are ticked off, walks as they happen, and alerts, without needing to message the sitter. |
 | USP 4 | Walk-route accountability | Owners record walking routes from home on a map. During a walk the sitter's path is tracked; going more than 25 m off the route warns the sitter, and more than 50 m notifies the owner. Walks must start and finish at the home, or be ended early with a reason. |
 
 ### Core features (CSP)
@@ -34,15 +34,16 @@ Log in with either the email or the username.
 | CSP 3 | Sitter search and filters (map and calendar) | Search by name, distance from an address or your location, available dates and hours, pet type and rating, on a list and a map. Sitters free for only part of the range are shown separately, with which days they're free. |
 | CSP 4 | Booking lifecycle | Request → sitter accepts or declines → owner confirms → session(s) → completed → paid, plus withdraw, cancel (with a reason) and expiry. |
 | CSP 5 | Notifications and session chat | In-app notifications for every booking, session, walk and payment event, with an unread badge, plus a chat between owner and sitter while a booking is confirmed or in progress. |
-| CSP 6 | Session reports and photos | When a session ends, the sitter submits notes and up to 3 photos. The owner reads the report with ticked tasks, walks and a timeline of where the sitter was. |
-| CSP 7 | Payment and reviews | The owner pays a completed booking by card through Stripe Checkout (test mode), then leaves a 1 to 5 star review that updates the sitter's rating. |
+| CSP 6 | Interactive Live Task Checklist | The sitter tracks task progress by ticking off tasks on a checklist on session page | live task progress is viewable to owner
+| CSP 7 | Session reports and photos | When a session ends, the sitter submits notes and up to 3 photos. The owner reads the report with ticked tasks, walks and a timeline of where the sitter was and when they completed tasks |
+| CSP 8 | Payment and reviews | The owner pays a completed booking by card through Stripe Checkout (test mode), then leaves a 1 to 5 star review that updates the sitter's rating. |
 
 ### Full feature list
 
 **Accounts and profiles**
 - Register as an owner or sitter, with live password rules; log in with email or username; log out; change password. Logins last 7 days.
 - Owners add pets (photo, species, age) and an address picked from OneMap suggestions (Singapore only), plus "Services I need".
-- Sitters add bio, "Sitting since", pet types, services, service area and photos. Sitters can earn badges shown on their profile.
+- Sitters add bio, "Sitting since", pet types, services, service area and photos. 
 
 **Finding a sitter**
 - Name search, filters (distance, dates and hours, pet type, rating), map view, and "Recommended for me" (USP 1).

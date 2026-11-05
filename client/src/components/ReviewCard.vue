@@ -11,7 +11,8 @@ const props = defineProps({
   sitterName: { type: String, default: 'your sitter' },
   review: { type: Object, default: null },        // the posted review, if there is one
   openUntil: { type: Number, default: null },     // when reviews close, in milliseconds
-  compact: { type: Boolean, default: false }      // a smaller posted review (phones, Recently ended)
+  compact: { type: Boolean, default: false },     // a smaller posted review (phones, Recently ended)
+  split: { type: Boolean, default: false }        // label above the card instead of inside it (Recently ended)
 })
 const emit = defineEmits(['saved'])
 
@@ -50,22 +51,21 @@ function onKey(e) {
 </script>
 
 <template>
-  <section class="rv" :class="{ 'rv--compact': compact && review }">
+  <section class="rv" :class="{ 'rv--compact': compact && review, 'rv--split': split }" :aria-labelledby="`rv-label-${bookingId}`">
+    <h5 :id="`rv-label-${bookingId}`" class="rv-label">{{ review ? 'Your review of' : 'Review' }} {{ sitterName }}</h5>
+
+    <!-- the card's content; with `split` it becomes its own card under the label -->
+    <div class="rv-body">
     <template v-if="review">
-      <h5 class="rv-label">Your review of {{ sitterName }}</h5>
       <div class="rv-stars" :aria-label="`${review.rating} out of 5 stars`">
         <span v-for="(on, i) in stars(review.rating)" :key="i" :class="on ? 'rv-on' : 'rv-off'" aria-hidden="true">★</span>
       </div>
       <p v-if="review.comment" class="rv-comment">{{ review.comment }}</p>
     </template>
 
-    <template v-else-if="closed">
-      <h5 class="rv-label">Review {{ sitterName }}</h5>
-      <p class="rv-hint mb-0">Reviews for this booking closed on {{ shortDate(new Date(openUntil)) }}.</p>
-    </template>
+    <p v-else-if="closed" class="rv-hint mb-0">Reviews for this booking closed on {{ shortDate(new Date(openUntil)) }}.</p>
 
     <form v-else @submit.prevent="submit">
-      <h5 :id="`rv-label-${bookingId}`" class="rv-label">Review {{ sitterName }}</h5>
       <div class="rv-pick" role="radiogroup" :aria-labelledby="`rv-label-${bookingId}`" @keydown="onKey">
         <button v-for="n in 5" :key="n" type="button" class="rv-star" role="radio" :data-star="n"
                 :aria-checked="rating === n" :aria-label="`${n} star${n === 1 ? '' : 's'}`"
@@ -80,6 +80,7 @@ function onKey(e) {
       <button type="submit" class="rv-submit" :disabled="saving">{{ saving ? 'Posting…' : 'Submit review' }}</button>
       <p v-if="openUntil" class="rv-hint rv-until">You can review until {{ shortDate(new Date(openUntil)) }}</p>
     </form>
+    </div>
   </section>
 </template>
 
@@ -99,6 +100,28 @@ function onKey(e) {
   font-weight: 800;
   letter-spacing: 0.07em;
   text-transform: uppercase;
+}
+/* split: the label sits above, and the content is a card with the same border as the report rows beside it */
+.rv--split {
+  display: grid;
+  align-content: start;
+  gap: 0.6rem;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+}
+.rv--split .rv-label {
+  margin: 0;
+}
+.rv--split .rv-body {
+  align-self: start;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid #e6dcd3;
+  border-radius: 10px;
+  background: #fff;
+}
+.rv--split.rv--compact .rv-body {
+  padding: 0.75rem 1rem;
 }
 .rv-stars {
   font-size: 1.4rem;

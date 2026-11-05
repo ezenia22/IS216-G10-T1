@@ -32,7 +32,11 @@ watch(() => props.session, (s) => {
   status.value = s.booking.status
 })
 
+// Messages about the session itself (starting, ending, the report, walks): shown under the status line,
+// in the sticky header (just above the bottom bar on a sitter's phone), so they appear where the button was pressed
 const actionError = ref('')
+// A tick that didn't save: shown at the top of the checklist, where the button was pressed
+const taskError = ref('')
 const starting = ref(false)
 const checking = ref(false) // waiting for the browser's location
 const reading = ref(null) // the last location reading: { location, accuracy }, or null
@@ -191,12 +195,12 @@ function countFor(item) {
 
 async function tick(item, n) {
   savingTask.value = true
-  actionError.value = ''
+  taskError.value = ''
   try {
     visit.value = await visitsApi.setTask(visit.value._id, item._id, n <= countFor(item) ? n - 1 : n)
     emit('visit-change', visit.value)
   } catch (err) {
-    actionError.value = err.response?.data?.message || 'Could not save. Try again.'
+    taskError.value = err.response?.data?.message || 'Could not save. Try again.'
   } finally {
     savingTask.value = false
   }
@@ -370,7 +374,7 @@ const shownEvents = computed(() => (allEvents.value ? events.value : events.valu
 
 <template>
   <article class="sc" :class="isSitter ? 'sc--sitter' : 'sc--owner'">
-    <div class="sc-sticky">
+    <div class="sc">
       <!-- header: who, which pets, which day, and how far along -->
       <header class="sc-head">
         <span class="sc-avatar" aria-hidden="true">
@@ -484,7 +488,7 @@ const shownEvents = computed(() => (allEvents.value ? events.value : events.valu
           </div>
         </div>
 
-        <!-- on phones the error also shows here, because the checklist may be scrolled out of view -->
+        <!-- a session message, right under the status line where its button is (above the bottom bar on a sitter's phone) -->
         <div v-if="actionError" class="alert alert-warning sc-dock__error" role="alert">{{ actionError }}</div>
       </div>
     </div>
@@ -572,7 +576,7 @@ const shownEvents = computed(() => (allEvents.value ? events.value : events.valu
         <section class="sc-card">
           <h4 class="sc-label">Care checklist</h4>
 
-          <div v-if="actionError" class="alert alert-warning">{{ actionError }}</div>
+          <div v-if="taskError" class="alert alert-warning" role="alert">{{ taskError }}</div>
 
           <div v-if="session.booking.notes" class="sc-notes-box">
             <strong class="d-block">{{ isSitter ? 'Notes from the owner' : 'Your notes for the sitter' }}</strong>
@@ -900,7 +904,7 @@ const shownEvents = computed(() => (allEvents.value ? events.value : events.valu
   min-height: 44px;
 }
 .sc-dock__error {
-  display: none;
+  margin: 0.6rem 1.4rem 0;
 }
 
 /* the body */
@@ -1326,6 +1330,9 @@ fieldset:disabled .photo-slot {
     order: 1;
     margin: 0 0.75rem 0.5rem;
     box-shadow: 0 4px 12px rgba(43, 36, 32, 0.18);
+  }
+  .sc-dock__error {
+    margin: 0.5rem 1rem 0;
   }
   .sc--sitter .sc-dock__error {
     display: block;

@@ -433,6 +433,13 @@ button.task-flag:hover {
   }
 }
 
+/* Bootstrap sm (576px to 767px): every task's button column is the same width, so 1st / 2nd / Done / Start walk all line up at one size */
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .task-controls {
+    width: 8.5rem;
+  }
+}
+
 /* small phones (under 576px): the buttons go on their own row under the task text, so the text gets the full width */
 @media (max-width: 575.98px) {
   .task-top {

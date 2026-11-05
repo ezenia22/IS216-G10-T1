@@ -41,6 +41,8 @@ const stats = computed(() => {
   ]
 })
 
+const statPairs = computed(() => [stats.value.slice(0, 2), stats.value.slice(2)])
+
 // ---- Checklist ----
 const notDoneFirst = ref(true)
 const groups = computed(() => checklistGroups(summary.value, notDoneFirst.value))
@@ -125,7 +127,7 @@ const titleId = computed(() => `rep-title-${props.entry.booking._id}`)
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport to="body"> 
     <div ref="scroller" class="rep-backdrop" @click.self="emit('close')">
       <div class="rep" role="dialog" aria-modal="true" :aria-labelledby="titleId">
         <!-- pinned header -->
@@ -149,20 +151,22 @@ const titleId = computed(() => `rep-title-${props.entry.booking._id}`)
         </header>
 
         <div class="rep-body">
-          <!-- stat strip -->
-          <dl class="rep-stats">
-            <div v-for="s in stats" :key="s.label" class="rep-stat">
-              <dt>{{ s.label }}</dt>
-              <dd>
-                <strong>{{ s.value }}</strong>
-                <small v-if="s.sub">{{ s.sub }}</small>
-              </dd>
-            </div>
-          </dl>
+          <!-- stat strip: two pairs (Started, Ended | Tasks, Walks) that sit over the two columns below -->
+          <div class="rep-stats">
+            <dl v-for="(pair, p) in statPairs" :key="p" class="rep-pair">
+              <div v-for="s in pair" :key="s.label" class="rep-stat">
+                <dt>{{ s.label }}</dt>
+                <dd>
+                  <strong>{{ s.value }}</strong>
+                  <small v-if="s.sub">{{ s.sub }}</small>
+                </dd>
+              </div>
+            </dl>
+          </div>
 
-          <!-- To note / Also noted -->
-          <section v-if="summary.warn.length || summary.info.length" class="rep-note" aria-label="To note">
-            <div v-if="summary.warn.length">
+          <!-- To note / Also noted: two cards on the same grid as the cards below -->
+          <div v-if="summary.warn.length || summary.info.length" class="rep-notes">
+            <section v-if="summary.warn.length" class="rep-note rep-note--warn" aria-label="To note">
               <h3 class="rep-note__title">⚠ To note</h3>
               <button v-for="(w, i) in summary.warn" :key="`w${i}`" type="button" class="rep-note__row rep-note__row--warn" @click="jumpTo(w.eventId)">
                 <span aria-hidden="true">⚠</span>
@@ -170,8 +174,8 @@ const titleId = computed(() => `rep-title-${props.entry.booking._id}`)
                 <span v-if="w.at" class="rep-note__time">{{ timeOf(w.at) }}</span>
                 <span aria-hidden="true">›</span>
               </button>
-            </div>
-            <div v-if="summary.info.length">
+            </section>
+            <section v-if="summary.info.length" class="rep-note" aria-label="Also noted">
               <h3 class="rep-note__title rep-note__title--info">Also noted</h3>
               <button v-for="(n, i) in summary.info" :key="`i${i}`" type="button" class="rep-note__row" @click="jumpTo(n.eventId)">
                 <span aria-hidden="true">ⓘ</span>
@@ -179,8 +183,8 @@ const titleId = computed(() => `rep-title-${props.entry.booking._id}`)
                 <span v-if="n.at" class="rep-note__time">{{ timeOf(n.at) }}</span>
                 <span aria-hidden="true">›</span>
               </button>
-            </div>
-          </section>
+            </section>
+          </div>
 
           <div class="rep-cols">
             <!-- timeline -->
@@ -311,7 +315,7 @@ const titleId = computed(() => `rep-title-${props.entry.booking._id}`)
   color: #2b2420;
 }
 .rep-head {
-  position: sticky;
+  
   top: 0;
   z-index: 2;
   display: flex;
@@ -377,24 +381,33 @@ const titleId = computed(() => `rep-title-${props.entry.booking._id}`)
   flex-direction: column;
   gap: 1.1rem;
   padding: 1.2rem 1.4rem 1.6rem;
+  /* one column grid for the stats, the notes and the cards, so all their edges line up */
+  --rep-cols: minmax(0, 1.25fr) minmax(0, 1fr);
+  --rep-gap: 1.1rem;
 }
 
-/* stat strip: plain columns with thin rules between them */
+/* stat strip: plain columns with thin rules between them.
+   Each stat has the same 1px edge + 1.1rem padding as a card, so its label starts where card titles start */
 .rep-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  margin: 0;
+  grid-template-columns: var(--rep-cols);
+  column-gap: var(--rep-gap);
+  row-gap: 0.9rem;
   padding-bottom: 1rem;
   border-bottom: 1px solid #e6dcd3;
 }
-.rep-stat {
-  padding: 0 1rem;
+.rep-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 0;
 }
-.rep-stat + .rep-stat {
+.rep-stat {
+  min-width: 0;
+  padding: 0 1.1rem;
   border-left: 1px solid #e6dcd3;
 }
-.rep-stat:first-child {
-  padding-left: 0;
+.rep-pair:first-child .rep-stat:first-child {
+  border-left-color: transparent;
 }
 .rep-stat dt {
   color: #5c524b;
@@ -415,16 +428,26 @@ const titleId = computed(() => `rep-title-${props.entry.booking._id}`)
   color: #6b5f56;
 }
 
-/* To note */
-.rep-note {
+/* To note / Also noted: a card each, over the timeline and the side column */
+.rep-notes {
   display: grid;
-  grid-template-columns: 1.2fr 1fr;
-  gap: 0.5rem 1.5rem;
+  grid-template-columns: var(--rep-cols);
+  gap: var(--rep-gap);
+  align-items: start;
+}
+.rep-note {
+  min-width: 0;
   padding: 0.9rem 1.1rem;
-  border: 1px solid #f1d7a6;
-  border-left: 5px solid #c98a12;
+  border: 1px solid #f0e8e0;
   border-radius: 12px;
   background: #fff;
+}
+.rep-note:only-child {
+  grid-column: 1 / -1;
+}
+.rep-note--warn {
+  border-color: #f1d7a6;
+  box-shadow: inset 4px 0 0 #c98a12; /* the stripe, without pushing the text in */
 }
 .rep-note__title {
   margin: 0 0 0.3rem;
@@ -466,13 +489,11 @@ const titleId = computed(() => `rep-title-${props.entry.booking._id}`)
 /* columns */
 .rep-cols {
   display: grid;
-  grid-template-columns: 1.25fr 1fr;
-  gap: 1.1rem;
+  grid-template-columns: var(--rep-cols);
+  gap: var(--rep-gap);
   align-items: start;
 }
 .rep-side {
-  position: sticky;
-  top: 5.5rem;
   display: flex;
   flex-direction: column;
   gap: 1.1rem;
@@ -637,6 +658,7 @@ const titleId = computed(() => `rep-title-${props.entry.booking._id}`)
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  overflow-wrap: normal; /* never "DISTAN CE" */
 }
 .rep-walk__stats dd {
   margin: 0;
@@ -748,6 +770,37 @@ const titleId = computed(() => `rep-title-${props.entry.booking._id}`)
 }
 
 /* phones: a full-screen sheet, in the order an owner reads it */
+/* phones and tablets (under 992px): one column. Stats, notes and every card are the same full width:
+   stats as a 2 × 2, then To note, Also noted, Sitter's notes, Care checklist, Timeline */
+@media (max-width: 991.98px) {
+  .rep-stats,
+  .rep-notes {
+    grid-template-columns: 1fr;
+  }
+  .rep-pair .rep-stat:first-child {
+    border-left-color: transparent;
+  }
+  .rep-cols {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch; /* every card the full width, not just as wide as its content */
+  }
+  .rep-side {
+    order: 1;
+  }
+  .rep-timeline {
+    order: 2;
+  }
+  .rep-walk__stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.2rem 0.6rem;
+  }
+  .rep-walk__stats dt {
+    font-size: 10px;
+    letter-spacing: 0.02em;
+  }
+}
+
 @media (max-width: 767.98px) {
   .rep-backdrop {
     padding: 0;
@@ -788,30 +841,8 @@ const titleId = computed(() => `rep-title-${props.entry.booking._id}`)
   .rep-body {
     padding: 1rem 0.75rem 1.5rem;
   }
-  .rep-stats {
-    grid-template-columns: 1fr 1fr;
-    gap: 0.9rem 0;
-  }
-  .rep-stat:nth-child(odd) {
-    padding-left: 0;
-    border-left: 0;
-  }
-  .rep-note {
-    grid-template-columns: 1fr;
-  }
   .rep-note__row {
     min-height: 44px;
-  }
-  .rep-cols {
-    display: flex;
-    flex-direction: column;
-  }
-  .rep-side {
-    position: static;
-    order: 1;
-  }
-  .rep-timeline {
-    order: 2;
   }
   .rep-walk__head {
     flex-direction: column;
@@ -823,14 +854,6 @@ const titleId = computed(() => `rep-title-${props.entry.booking._id}`)
   .rep-event {
     grid-template-columns: 3.6rem 0.8rem 1fr;
     gap: 0.4rem;
-  }
-  .rep-walk__stats {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.2rem 0.6rem;
-  }
-  .rep-walk__stats dt {
-    font-size: 10px;
-    letter-spacing: 0.02em;
   }
   .rep-walk__rows li {
     grid-template-columns: 3.6rem 1fr;

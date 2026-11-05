@@ -15,14 +15,8 @@ const upcoming = computed(() =>
 )
 const nextBooking = computed(() => upcoming.value[0])
 
-// Count bookings whose dates cover today (Singapore time), plus any already in progress
-const todayCount = computed(() => {
-  const sgDate = (d) => new Date(d).toLocaleDateString('en-CA', { timeZone: 'Asia/Singapore' })
-  const today = sgDate(new Date())
-  return upcoming.value.filter(
-    (b) => b.status === 'in-progress' || (sgDate(b.startDate) <= today && today <= sgDate(b.endDate))
-  ).length
-})
+// Accepted by the sitter, waiting for the owner to confirm
+const awaitingConfirmation = computed(() => bookings.value.filter((b) => b.status === 'accepted'))
 const alsoComingUp = computed(() => upcoming.value.slice(1, 4))
 
 function petNames(booking) {
@@ -77,7 +71,7 @@ onMounted(loadDashboard)
       <!-- Stat tiles -->
       <div class="row g-3 mb-4">
         <div class="col-12 col-md-4">
-          <router-link :to="{ path: '/sitter/requests', query: { tab: 'awaiting-confirmation' } }" class="card h-100 text-decoration-none text-body stat-tile">
+          <router-link :to="{ path: '/sitter/requests', query: { tab: 'pending' } }" class="card h-100 text-decoration-none text-body stat-tile">
             <div class="card-body slim-tile">
               <div class="fs-3 fw-bold stat-number">{{ newRequests.length }}</div>
               <div class="tile-label">New requests<span class="text-muted small d-none d-md-block">Waiting for your reply</span></div>
@@ -88,15 +82,15 @@ onMounted(loadDashboard)
           <router-link :to="{ path: '/sitter/requests', query: { tab: 'upcoming' } }" class="card h-100 text-decoration-none text-body stat-tile">
             <div class="card-body slim-tile">
               <div class="fs-3 fw-bold stat-number">{{ upcoming.length }}</div>
-              <div class="tile-label">Upcoming<span class="text-muted small d-none d-md-block">Accepted or paid</span></div>
+              <div class="tile-label">Upcoming<span class="text-muted small d-none d-md-block">Coming up soon!</span></div>
             </div>
           </router-link>
         </div>
         <div class="col-6 col-md-4">
-          <router-link :to="{ path: '/sitter/requests', query: { tab: 'pending' } }" class="card h-100 text-decoration-none text-body stat-tile">
+          <router-link :to="{ path: '/sitter/requests', query: { tab: 'awaiting-confirmation' } }" class="card h-100 text-decoration-none text-body stat-tile">
             <div class="card-body slim-tile">
-              <div class="fs-3 fw-bold stat-number">{{ todayCount }}</div>
-              <div class="tile-label">Today<span class="text-muted small d-none d-md-block">Bookings today</span></div>
+              <div class="fs-3 fw-bold stat-number">{{ awaitingConfirmation.length }}</div>
+              <div class="tile-label">Awaiting confirmation<span class="text-muted small d-none d-md-block">Waiting for the owner</span></div>
             </div>
           </router-link>
         </div>

@@ -38,9 +38,11 @@ export function useLocationSearch({ addressesOnly = false} = {}) {
         }
     }
 
-    function onLocationInput() {
+    // typed = the input's own text. On phones the keyboard holds back the word being typed,
+    // and v-model doesn't update locationQuery until it's done, so use what's in the box.
+    function onLocationInput(typed) {
     clearTimeout(debounceTimer)
-    const q = locationQuery.value.trim()
+    const q = (typed ?? locationQuery.value).trim()
     if (q === "") {            // clearing the field removes the pin
         selected.value = null
         locationSuggestions.value = []

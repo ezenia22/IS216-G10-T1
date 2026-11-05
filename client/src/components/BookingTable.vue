@@ -78,7 +78,8 @@ function sitterIdOf(booking) {
       <tbody>
         <template v-for="b in rows" :key="b._id">
           <!-- main row -->
-          <tr :class="{ 'opacity-75': ['declined', 'cancelled', 'expired'].includes(b.status) }">
+          <!-- the fade goes on the cells, not the whole row, so the buttons (Rebook) keep their full colour -->
+          <tr :class="{ 'row-faded': ['declined', 'cancelled', 'expired'].includes(b.status) }">
             <td>
               <div class="d-flex align-items-center gap-2">
                 <span class="avatar">{{ otherPerson(b).charAt(0).toUpperCase() }}</span>
@@ -108,6 +109,7 @@ function sitterIdOf(booking) {
             </td>
             <td class="text-end actions-cell">
               <!-- sitters get their buttons stacked top to bottom, all the same width (Accept, Decline, View details); owners keep them in a row -->
+              <!-- (from 992px wide, owners' buttons stack the same way too, all 132px wide; see .row-actions in the style) -->
               <div
                 class="d-flex gap-2 row-actions"
                 :class="viewer === 'sitter' ? 'flex-column align-items-stretch actions-stack' : 'flex-wrap justify-content-end align-items-center'"
@@ -142,12 +144,6 @@ function sitterIdOf(booking) {
                   :class="careDetails(b) === 'needed' ? 'btn-brand' : 'btn-outline-secondary'"
                   :to="`/bookings/${b._id}?details=open`"
                 >{{ careDetails(b) === 'needed' ? 'Add care details' : 'Edit care details' }}</router-link>
-                <!-- Owners can review the sitter once the sitter has finished (before or after paying) -->
-                <router-link
-                  v-if="viewer === 'owner' && ['completed', 'paid'].includes(b.status)"
-                  class="btn btn-sm btn-outline-secondary"
-                  :to="`/bookings/${b._id}?review=1`"
-                >Review sitter</router-link>
                 <button
                   v-if="canCancel(b)" 
                   type="button"
@@ -171,6 +167,13 @@ function sitterIdOf(booking) {
                 <!-- 
                 on clicking the button, router-link component directs to that link in the router index.js, which directs it to bookingdetail.vue page 
                 -->
+                <!-- Owners can review the sitter once the sitter has finished (before or after paying) -->
+                <!-- (comes after Rebook so it sits under it) -->
+                <router-link
+                  v-if="viewer === 'owner' && ['completed', 'paid'].includes(b.status)"
+                  class="btn btn-sm btn-outline-secondary text-nowrap"
+                  :to="`/bookings/${b._id}?review=1`"
+                >Review sitter</router-link>
               </div>
             </td>
           </tr>
@@ -193,7 +196,8 @@ function sitterIdOf(booking) {
   color: #7a5a00;
   font-size: 0.78rem;
   font-weight: 800;
-  white-space: nowrap;
+  max-width: 100%; /* wraps onto two lines instead of running past the Status column */
+  line-height: 1.25;
 }
 .cancel-reason { font-style: italic; max-width: 16rem; white-space: normal; overflow-wrap: anywhere; } /* the reason someone gave for cancelling */
 .avatar {
@@ -220,6 +224,18 @@ function sitterIdOf(booking) {
   min-height: 38px;
 }
 .dates-cell { white-space: nowrap; }
+.row-faded > td:not(.actions-cell) { opacity: 0.75; } /* declined / cancelled / expired rows */
+
+/* table layout: every button in the Actions column is the same width, one under another */
+@media (min-width: 992px) {
+  .row-actions {
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
+    width: 132px;
+    margin-left: auto;
+  }
+}
 
 /* phones and narrow windows: each booking becomes a card, so nothing runs off the screen */
 @media (max-width: 991.98px) {
