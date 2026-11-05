@@ -33,28 +33,39 @@ const count = computed(() => props.entry.days.length)
 <template>
   <div class="rr">
     <p class="rr-label">Care reports · {{ count }} session{{ count === 1 ? '' : 's' }}<span class="rr-hint"> · Tap a row for the full report</span></p>
-    <button v-for="r in rows" :key="r.day.date" type="button" class="rr-row" @click="emit('open', r.index)">
-      <span class="rr-row__date">
-        <strong>{{ dayLabel(r.day.date) }}</strong>
-        <small>Day {{ r.day.dayNumber }}<span class="rr-wide"> of {{ entry.totalDays }}</span>{{ r.last ? ' · last' : '' }}</small>
-      </span>
-      <span class="rr-row__times">{{ r.times }}</span>
-      <strong class="rr-row__count">{{ r.count }}</strong>
-      <span class="rr-row__meta">
-        <span v-if="r.photos" class="rr-icon" :aria-label="`${r.photos} photos`">
-          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4zM12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" /></svg>{{ r.photos }}
+    <!-- the rows go in their own list so a parent grid can line the label and the rows up separately -->
+    <div class="rr-list">
+      <button v-for="r in rows" :key="r.day.date" type="button" class="rr-row" @click="emit('open', r.index)">
+        <span class="rr-row__date">
+          <strong>{{ dayLabel(r.day.date) }}</strong>
+          <small>Day {{ r.day.dayNumber }}<span class="rr-wide"> of {{ entry.totalDays }}</span>{{ r.last ? ' · last' : '' }}</small>
         </span>
-        <span v-if="r.walks" class="rr-icon" :aria-label="`${r.walks} walks`">
-          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M13 4a1.5 1.5 0 1 0 0 .01M10 21l2-6-3-3 2-4 3 2 3 1M7 13l1-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>{{ r.walks }}
+        <strong class="rr-row__count">{{ r.count }}</strong>
+        <!-- times and icons share a line when the row is narrow; on a wide row each gets its own column -->
+        <span class="rr-row__info">
+          <span class="rr-row__times">{{ r.times }}</span>
+          <span v-if="r.photos || r.walks || r.warning" class="rr-row__meta">
+            <span v-if="r.photos" class="rr-icon" :aria-label="`${r.photos} photos`">
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4zM12 16a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" /></svg>{{ r.photos }}
+            </span>
+            <span v-if="r.walks" class="rr-icon" :aria-label="`${r.walks} walks`">
+              <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M13 4a1.5 1.5 0 1 0 0 .01M10 21l2-6-3-3 2-4 3 2 3 1M7 13l1-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>{{ r.walks }}
+            </span>
+            <span v-if="r.warning" class="rr-warn">⚠ {{ r.warning }}</span>
+          </span>
         </span>
-        <span v-if="r.warning" class="rr-warn">⚠ {{ r.warning }}</span>
-      </span>
-      <span class="rr-row__go" aria-hidden="true">›</span>
-    </button>
+        <span class="rr-row__go" aria-hidden="true">›</span>
+      </button>
+    </div>
   </div>
 </template>
 
 <style scoped>
+/* The rows react to the width of their own column (a container query), not the window,
+   so they fit whether they sit in a wide card, half of Recently ended, or a phone */
+.rr {
+  min-width: 0; /* no container on .rr itself: containment would stop it being a subgrid in Recently ended */
+}
 .rr-label {
   margin: 0 0 0.6rem;
   color: #5c524b;
@@ -63,22 +74,27 @@ const count = computed(() => props.entry.days.length)
   letter-spacing: 0.07em;
   text-transform: uppercase;
 }
+.rr-list {
+  container: rr / inline-size;
+  display: grid;
+  gap: 0.7rem;
+}
+/* narrow: two lines. "Tue 3 Nov · Day 3 · last", 7/7 and › on top; times, photos, walks and any warning under it */
 .rr-row {
   display: grid;
-  grid-template-columns: 6.4rem 8.6rem 2.8rem 1fr 1rem;
+  grid-template-columns: minmax(0, 1fr) 3rem 1rem;
+  grid-template-areas:
+    "date count go"
+    "info info go";
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.25rem 0.75rem;
   width: 100%;
-  margin-bottom: 0.7rem;
   padding: 0.75rem 1rem;
   border: 1px solid #e6dcd3;
   border-radius: 10px;
   background: #fff;
   color: #2b2420;
   text-align: left;
-}
-.rr-row:last-child {
-  margin-bottom: 0;
 }
 .rr-row:hover {
   border-color: var(--accent-main);
@@ -88,20 +104,49 @@ const count = computed(() => props.entry.days.length)
   outline-offset: 2px;
 }
 .rr-row__date {
+  grid-area: date;
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 0.4rem;
+  min-width: 0;
   line-height: 1.25;
+}
+.rr-row__date small::before {
+  content: '· ';
 }
 .rr-row__date small,
 .rr-row__times {
   color: #6b5f56;
   font-size: 0.85rem;
 }
+.rr-hint,
+.rr-wide {
+  display: none;
+}
+/* the hint only fits on one line with the label on wide screens */
+@media (min-width: 1200px) {
+  .rr-hint {
+    display: inline;
+  }
+}
+.rr-row__count {
+  grid-area: count;
+  text-align: right;
+}
+.rr-row__info {
+  grid-area: info;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2rem 0.75rem;
+  min-width: 0;
+}
 .rr-row__meta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.25rem 0.7rem;
+  gap: 0.2rem 0.7rem;
   min-width: 0;
 }
 .rr-icon {
@@ -115,39 +160,44 @@ const count = computed(() => props.entry.days.length)
   color: #7a5a00;
   font-size: 0.85rem;
   font-weight: 800;
-  white-space: nowrap; /* the warning wraps as a whole, never mid-phrase */
+  overflow-wrap: anywhere; /* wraps inside the row instead of running out of it */
 }
 .rr-row__go {
+  grid-area: go;
   color: #6b5f56;
   font-size: 1.3rem;
+  text-align: right;
 }
 
-@media (max-width: 767.98px) {
-  .rr-hint,
+/* wide (580px or more): one line per row, in fixed columns so dates, times and counts line up down the list */
+@container rr (min-width: 580px) {
   .rr-wide {
-    display: none;
+    display: inline;
   }
-  /* rows become three lines: date and ›, then times / count / icons, then the warning */
   .rr-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.3rem 0.75rem;
+    grid-template-columns: 7.5rem 9rem 3rem minmax(0, 1fr) 1rem;
+    grid-template-areas: "date times count meta go";
+    gap: 0.6rem;
   }
   .rr-row__date {
-    order: 1;
-    flex: 1 1 calc(100% - 2rem);
-    flex-direction: row;
-    gap: 0.35rem;
-    align-items: baseline;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 0;
   }
   .rr-row__date small::before {
-    content: '· ';
+    content: none;
   }
-  .rr-row__go { order: 2; }
-  .rr-row__times { order: 3; }
-  .rr-row__count { order: 4; }
-  .rr-row__meta { display: contents; } /* its icons and warning join the row's own lines */
-  .rr-icon { order: 5; }
-  .rr-warn { order: 6; flex: 1 1 100%; }
+  .rr-row__info {
+    display: contents;
+  }
+  .rr-row__times {
+    grid-area: times;
+  }
+  .rr-row__meta {
+    grid-area: meta;
+  }
+  .rr-row__count {
+    text-align: left;
+  }
 }
 </style>
