@@ -10,7 +10,7 @@ const locationQueryModel = defineModel('locationQuery')
     <div class="position-relative mb-3">
         <input type="text" placeholder="Select location" class="form-control" id="locations"
             v-model="locationQueryModel"
-            @input="$emit('enterLocation')"
+            @input="$emit('enterLocation', $event.target.value)"
             @keydown.enter.prevent="locationSuggestions[0] && $emit('selectLocation', locationSuggestions[0])"
             autocomplete="off">
         <ul v-if="locationSuggestions.length" class="list-group position-absolute w-100 shadow" style="z-index:1000">

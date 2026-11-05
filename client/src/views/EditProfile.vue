@@ -209,6 +209,11 @@ const saving = ref(false)
 
 async function save() {
   error.value = ''
+  // the address box has text that isn't a picked address: stop, instead of quietly keeping the old one
+  if (locationQuery.value.trim() && locationQuery.value !== place.value?.label) {
+    error.value = 'Pick your address from the list before saving.'
+    return
+  }
   saving.value = true
   let detailsSaved = false
 
