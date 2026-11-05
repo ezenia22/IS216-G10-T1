@@ -82,7 +82,7 @@ onMounted(loadDashboard)
           <router-link :to="{ path: '/sitter/requests', query: { tab: 'upcoming' } }" class="card h-100 text-decoration-none text-body stat-tile">
             <div class="card-body slim-tile">
               <div class="fs-3 fw-bold stat-number">{{ upcoming.length }}</div>
-              <div class="tile-label">Upcoming<span class="text-muted small d-none d-md-block">Accepted or paid</span></div>
+              <div class="tile-label">Upcoming<span class="text-muted small d-none d-md-block">Coming up soon!</span></div>
             </div>
           </router-link>
         </div>
